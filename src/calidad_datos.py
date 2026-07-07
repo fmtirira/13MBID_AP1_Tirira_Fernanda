@@ -27,12 +27,26 @@ def verificar_formato(df: pd.DataFrame, columnas_esperadas: dict) -> dict:
     """Verifica que el dataset tenga las columnas y tipos de datos esperados.
 
     columnas_esperadas: dict {nombre_columna: tipo_pandas_esperado}
+
+    Nota: para columnas de texto, pandas 2.x reporta el dtype como "object"
+    mientras que versiones más recientes (pandas 3.x) pueden reportarlo como
+    "str". Ambos se consideran equivalentes para no depender de la versión
+    de pandas instalada.
     """
+    equivalencias_texto = {"object", "str"}
+
+    def _tipos_compatibles(tipo_real: str, tipo_esperado: str) -> bool:
+        if tipo_esperado in equivalencias_texto and tipo_real in equivalencias_texto:
+            return True
+        return tipo_real.startswith(tipo_esperado)
+
     columnas_faltantes = [c for c in columnas_esperadas if c not in df.columns]
     tipos_incorrectos = []
     for col, tipo_esperado in columnas_esperadas.items():
-        if col in df.columns and not str(df[col].dtype).startswith(tipo_esperado):
-            tipos_incorrectos.append((col, str(df[col].dtype), tipo_esperado))
+        if col in df.columns:
+            tipo_real = str(df[col].dtype)
+            if not _tipos_compatibles(tipo_real, tipo_esperado):
+                tipos_incorrectos.append((col, tipo_real, tipo_esperado))
 
     cumple = (len(columnas_faltantes) == 0) and (len(tipos_incorrectos) == 0)
     return {

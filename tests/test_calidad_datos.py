@@ -49,7 +49,7 @@ def test_formato_dataset_creditos(creditos):
         "id_cliente": "float",
         "edad": "int",
         "importe_solicitado": "int",
-        "falta_pago": "str",
+        "falta_pago": "object",
     }
     resultado = verificar_formato(creditos, columnas_esperadas)
     assert resultado["cumple"], f"Columnas/tipos incorrectos: {resultado}"
