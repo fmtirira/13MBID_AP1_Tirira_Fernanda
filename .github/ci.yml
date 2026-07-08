@@ -1,0 +1,32 @@
+name: CI - Tests del proyecto
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install -r config/requirements.txt
+
+      - name: Ejecutar tests de calidad de datos (AP1)
+        run: pytest tests/test_calidad_datos.py -v
+
+      - name: Generar dataset procesado (necesario para evaluar el modelo)
+        run: python pipelines/pipeline_datos.py
+
+      - name: Ejecutar tests de evaluación del modelo (AP2)
+        run: pytest tests/test_evaluacion_modelo.py -v
